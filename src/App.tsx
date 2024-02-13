@@ -1,68 +1,57 @@
 import "./App.css"
-import { Counter } from "./features/counter/Counter"
-import { Quotes } from "./features/quotes/Quotes"
-import logo from "./logo.svg"
+import { useState, useEffect } from "react";
+
 
 const App = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [catalog, setCatalog] = useState([]);
+
+  const handleSearch = async () => {
+    try {
+      const response = await fetch(`https://www.googleapis.com/books/v1/volumes?q=${searchQuery}&key=AIzaSyALO2yhbqZ3qDdUmkAtsmMFsGF0V4JMkEA`);
+      if (!response.ok) {
+        throw new Error('Network response was not ok');
+      }
+      const data = await response.json();
+      setSearchResults(data.items); // Assuming items contain search results
+    } catch (error) {
+      console.error('Error fetching data:', error);
+    }
+  };
+
+  const addToCatalog = (book) => {
+    setCatalog([...catalog, book]);
+  };
+
   return (
     <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <Counter />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <Quotes />
-        <span>
-          <span>Learn </span>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://redux-toolkit.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Redux Toolkit
-          </a>
-          <span>, </span>
-          <a
-            className="App-link"
-            href="https://react-redux.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            React Redux
-          </a>
-          ,<span> and </span>
-          <a
-            className="App-link"
-            href="https://reselect.js.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Reselect
-          </a>
-        </span>
+      <header>
+        <h1>My Book Catalog</h1>
       </header>
+      <div className="search-bar">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Search for books..."
+        />
+        <button onClick={handleSearch}>Search</button>
+      </div>
+      <div>
+        {searchResults.map((book) => (
+          // let picture = book.volumeInfo.imageLinks.medium
+          <div key={book.id}>
+            {/* Display book information */}
+            <h2>{book.volumeInfo.title}</h2>
+            <p>{book.volumeInfo.authors.join(', ')}</p>
+            <p>{book.volumeInfo.description}</p>
+            <img src={book.volumeInfo.imageLinks.smallThumbnail} alt="bookimg"></img>
+          </div>
+        ))}
+      </div>
     </div>
-  )
+  );
 }
 
 export default App
